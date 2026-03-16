@@ -1,13 +1,16 @@
 import { Button, Card, Form, Input, message } from "antd"
 import { useMutation } from "@tanstack/react-query"
-import { authApi } from "../api/auth.api"
+import { api } from "../api/axios"
 import { useNavigate } from "react-router-dom"
 
 export default function RegisterPage () {
     const navigate = useNavigate()
 
     const registerMutation = useMutation({
-        mutationFn: (data) => authApi.register(data),
+        mutationFn: async (data) => {
+            const res = await api.post("/auth/register", data)
+            return res
+        },
         onSuccess: () => {
             message.success("Registration successful! Please login.")
             navigate("/login")

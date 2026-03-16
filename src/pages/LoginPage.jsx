@@ -1,7 +1,7 @@
 import { Button, Card, Form, Input, message } from "antd"
 import { useAuthStore } from "../store/auth.store"
 import { useMutation } from "@tanstack/react-query"
-import { authApi } from "../api/auth.api"
+import { api } from "../api/axios"
 import { useNavigate } from "react-router-dom"
 
 export default function LoginPage() {
@@ -9,8 +9,13 @@ export default function LoginPage() {
     const { setUser } = useAuthStore()
 
     const loginMutation = useMutation({
-        mutationFn: (data) => authApi.login(data),
+        mutationFn: async (data) => {
+            const res = await api.post("/auth/login", data)
+            return res
+        },
         onSuccess: (res) => {
+            localStorage.setItem("accessToken", res.data.token.accessToken)
+            localStorage.setItem("refreshToken", res.data.token.refreshToken)
             setUser(res.data.user)
             message.success("Login successful!")
             navigate("/")

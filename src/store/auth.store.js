@@ -14,16 +14,6 @@ export const useAuthStore = create((set) => ({
         await api.post("/auth/register", data)
         set({ loading: false })
     },
-
-    login: async (data) => {
-        const res = await api.post("/auth/login", data)
-
-        localStorage.setItem("accessToken", res.data.token.accessToken)
-        localStorage.setItem("refreshToken", res.data.token.refreshToken)
-
-        set({ isAuth: true })
-        return res
-    },
     
     getProfile: async () => {
         set({ loading: true })
