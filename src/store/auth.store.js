@@ -1,29 +1,51 @@
 import { create } from "zustand"
-import { authApi } from "../api/auth.api"
+import { api } from "../api/axios"
 
 export const useAuthStore = create((set) => ({
-    user: null,
+    profile: null,
     loading: false,
+    isAuth: false,
 
-    register: async ( username, email, password ) => {
+    setUser: (user) => {
+        set({ profile: user, isAuth: true })
+    },
+
+    register: async (data) => {
+        await api.post("/auth/register", data)
+        set({ loading: false })
+    },
+
+    login: async (data) => {
+        const res = await api.post("/auth/login", data)
+
+        localStorage.setItem("accessToken", res.data.token.accessToken)
+        localStorage.setItem("refreshToken", res.data.token.refreshToken)
+
+        set({ isAuth: true })
+        return res
+    },
+    
+    getProfile: async () => {
         set({ loading: true })
         try {
-            await authApi.register({ username, email, password })
+            const res = await api.get("/profile")
+            set({ profile: res.data, loading: false })
+        } catch (error) {
             set({ loading: false })
-        } catch (e) {
-            set({ loading: false })
-            throw e
+            throw error
         }
     },
 
-    login: async ( email, password ) => {
-        set({ loading: true })
+    logout: async () => {
+        const refreshToken = localStorage.getItem("refreshToken")
+
         try {
-            const res = await authApi.login({ email, password })
-            set({ user: res.data.user, loading: false })
+            await api.post("/auth/logout", { refreshToken })
         } catch (e) {
-            set({ loading: false })
-            throw e
-        }
+            console.error("Logout error", e)
+        } 
+
+        localStorage.clear()
+        set({ profile: null, isAuth: false })
     }
 }))
