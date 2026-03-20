@@ -8,7 +8,7 @@ export default function DashboardPage () {
 
     useEffect(() => {
         getProfile()
-    }, [])
+    })
 
     const handleLogout = async () => {
         await logout()
