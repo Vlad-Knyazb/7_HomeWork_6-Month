@@ -2,11 +2,26 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button, Card } from "antd"
 import { getCart, removeFromCart } from "../store/cartStore"
 
+interface Product {
+    id: number
+    title: string
+    description: string
+    image?: string
+    categories?: {
+        title: string
+    }
+}
+
+interface CartItem {
+    id: number
+    product: Product
+    quantity: number
+}
 
 export default function Cart() {
     const queryClient = useQueryClient()
 
-    const { data: cart, isLoading } = useQuery({
+    const { data: cart, isLoading } = useQuery<CartItem[]>({
         queryKey: ["/cart"],
         queryFn: getCart
     })
@@ -14,12 +29,12 @@ export default function Cart() {
     const removeMutation = useMutation({
         mutationFn: removeFromCart,
         onSuccess: () => {
-            queryClient.invalidateQueries([`cart`])
+            queryClient.invalidateQueries({ queryKey: ["cart"] })
         }
     })
 
     if (isLoading) return <p>Loading...</p>
-    if (!cart.length) return <p>Cart is empty</p>
+    if (!cart?.length) return <p>Cart is empty</p>
 
     return (
         <div style={{ padding: 20, display: "flex", flexWrap: "wrap", gap: 20 }}>
@@ -27,7 +42,7 @@ export default function Cart() {
                  <Card
                     key={item.id}
                     title={item.product.title}
-                    cover={<img src={item.product?.image ? item.product?.image : `https://odoo-community.org/web/image/product.template/3936/image_1920?unique=8cb69f6`} alt="" />}
+                    cover={<img src={item.product?.image ? item.product.image : `https://odoo-community.org/web/image/product.template/3936/image_1920?unique=8cb69f6`} alt="" />}
                     style={{
                         border: "1px solid #ccc",
                         marginBottom: 10,
